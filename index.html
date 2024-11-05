@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 모바일 친화적 뷰포트 설정 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>모바일 메모장</title>
     <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
@@ -42,9 +42,11 @@
 
         /* 메모 목록 아이템 스타일 */
         .note-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             padding: 10px;
             border-bottom: 1px solid #eee;
-            cursor: pointer;
             transition: background-color 0.3s;
         }
         .note-item:last-child {
@@ -52,6 +54,22 @@
         }
         .note-item:hover {
             background-color: #f0f8ff;
+        }
+        .note-item button {
+            margin-left: 5px;
+            padding: 5px;
+            font-size: 0.9em;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+        }
+        .edit-button {
+            background-color: #007aff;
+            color: white;
+        }
+        .delete-button {
+            background-color: #ff4d4d;
+            color: white;
         }
 
         /* 에디터 컨테이너 스타일 */
@@ -118,6 +136,8 @@
             placeholder: '여기에 메모를 작성하세요...'
         });
 
+        let editingIndex = -1; // 현재 수정 중인 메모 인덱스
+
         // 로컬 스토리지에서 메모 불러오기
         function loadNotes() {
             const notesContainer = document.getElementById('notes');
@@ -126,20 +146,53 @@
             notes.forEach((note, index) => {
                 const noteItem = document.createElement('div');
                 noteItem.className = 'note-item';
-                noteItem.innerText = `메모 ${index + 1}: ${note.substring(0, 20)}...`; // 메모의 앞부분만 표시
-                noteItem.addEventListener('click', () => {
-                    quill.root.innerHTML = note;
+
+                // 메모 내용 미리보기
+                const notePreview = document.createElement('span');
+                notePreview.innerText = `메모 ${index + 1}: ${note.substring(0, 20)}...`; // 앞부분만 표시
+
+                // 수정 버튼
+                const editButton = document.createElement('button');
+                editButton.className = 'edit-button';
+                editButton.innerText = '수정';
+                editButton.addEventListener('click', () => {
+                    quill.root.innerHTML = note; // 에디터에 메모 내용 로드
+                    editingIndex = index; // 현재 수정 중인 메모 인덱스 저장
                 });
+
+                // 삭제 버튼
+                const deleteButton = document.createElement('button');
+                deleteButton.className = 'delete-button';
+                deleteButton.innerText = '삭제';
+                deleteButton.addEventListener('click', () => {
+                    if (confirm('이 메모를 삭제하시겠습니까?')) {
+                        notes.splice(index, 1); // 메모 삭제
+                        localStorage.setItem('notes', JSON.stringify(notes));
+                        loadNotes(); // 목록 갱신
+                    }
+                });
+
+                noteItem.appendChild(notePreview);
+                noteItem.appendChild(editButton);
+                noteItem.appendChild(deleteButton);
+
                 notesContainer.appendChild(noteItem);
             });
         }
 
-        // 메모 저장 기능
+        // 메모 저장 또는 수정 기능
         document.getElementById('saveButton').addEventListener('click', () => {
             const noteContent = quill.root.innerHTML;
             if (noteContent.trim() !== '') {
                 let notes = JSON.parse(localStorage.getItem('notes') || '[]');
-                notes.push(noteContent);
+                if (editingIndex >= 0) {
+                    // 기존 메모 수정
+                    notes[editingIndex] = noteContent;
+                    editingIndex = -1; // 수정 모드 종료
+                } else {
+                    // 새 메모 저장
+                    notes.push(noteContent);
+                }
                 localStorage.setItem('notes', JSON.stringify(notes));
                 alert('메모가 저장되었습니다.');
                 loadNotes();
