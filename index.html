@@ -2,45 +2,155 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Quill 에디터 플레이스홀더 예제</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 모바일 친화적 뷰포트 설정 -->
+    <title>모바일 메모장</title>
     <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
     <style>
-        /* 에디터 컨테이너 스타일 */
-        #editor {
-            height: 500px;
-            background-color: #f9f9f9;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            padding: 10px;
-            font-family: Arial, sans-serif;
+        /* 전체 페이지 스타일 */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f6f9;
             color: #333;
-            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        /* Quill 에디터 툴바 스타일 */
+
+        /* 메모 목록 스타일 */
+        #noteList {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            max-height: 200px;
+        }
+
+        #noteList h2 {
+            margin: 0;
+            font-size: 1.2em;
+            color: #007aff;
+            text-align: center;
+            padding: 10px;
+        }
+
+        /* 메모 목록 아이템 스타일 */
+        .note-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .note-item:last-child {
+            border-bottom: none;
+        }
+        .note-item:hover {
+            background-color: #f0f8ff;
+        }
+
+        /* 에디터 컨테이너 스타일 */
+        #editor-container {
+            width: 100%;
+            max-width: 600px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
         .ql-toolbar.ql-snow {
             background-color: #fafafa;
-            border: 1px solid #ddd;
             border-top-left-radius: 8px;
             border-top-right-radius: 8px;
         }
-        /* Quill 에디터 내용 스타일 */
+
         .ql-container.ql-snow {
-            border: 1px solid #ddd;
             border-bottom-left-radius: 8px;
             border-bottom-right-radius: 8px;
+            min-height: 150px;
+            font-size: 1.1em;
+        }
+
+        /* 저장 버튼 스타일 */
+        #saveButton {
+            width: 100%;
+            max-width: 600px;
+            padding: 10px;
+            font-size: 1.2em;
+            color: #fff;
+            background-color: #007aff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #saveButton:hover {
+            background-color: #005bb5;
         }
     </style>
 </head>
 <body>
 
-    <div id="editor"></div>
+    <!-- 메모 목록 -->
+    <div id="noteList">
+        <h2>이전 메모</h2>
+        <div id="notes"></div>
+    </div>
+
+    <!-- 메모 작성 에디터 -->
+    <div id="editor-container">
+        <div id="editor" placeholder="여기에 메모를 작성하세요..."></div>
+    </div>
+
+    <!-- 저장 버튼 -->
+    <button id="saveButton">메모 저장</button>
 
     <script>
         const quill = new Quill('#editor', {
             theme: 'snow',
-            placeholder: '여기에 내용을 입력하세요...' // 플레이스홀더 텍스트 설정
+            placeholder: '여기에 메모를 작성하세요...'
         });
+
+        // 로컬 스토리지에서 메모 불러오기
+        function loadNotes() {
+            const notesContainer = document.getElementById('notes');
+            notesContainer.innerHTML = '';
+            const notes = JSON.parse(localStorage.getItem('notes') || '[]');
+            notes.forEach((note, index) => {
+                const noteItem = document.createElement('div');
+                noteItem.className = 'note-item';
+                noteItem.innerText = `메모 ${index + 1}: ${note.substring(0, 20)}...`; // 메모의 앞부분만 표시
+                noteItem.addEventListener('click', () => {
+                    quill.root.innerHTML = note;
+                });
+                notesContainer.appendChild(noteItem);
+            });
+        }
+
+        // 메모 저장 기능
+        document.getElementById('saveButton').addEventListener('click', () => {
+            const noteContent = quill.root.innerHTML;
+            if (noteContent.trim() !== '') {
+                let notes = JSON.parse(localStorage.getItem('notes') || '[]');
+                notes.push(noteContent);
+                localStorage.setItem('notes', JSON.stringify(notes));
+                alert('메모가 저장되었습니다.');
+                loadNotes();
+                quill.root.innerHTML = ''; // 에디터 초기화
+            } else {
+                alert('내용을 입력하세요.');
+            }
+        });
+
+        // 초기 메모 로드
+        loadNotes();
     </script>
 
 </body>
