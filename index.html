@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Quill 에디터 플레이스홀더 예제</title>
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+    <style>
+        /* 에디터 컨테이너 스타일 */
+        #editor {
+            height: 500px;
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+            color: #333;
+            line-height: 1.6;
+        }
+        /* Quill 에디터 툴바 스타일 */
+        .ql-toolbar.ql-snow {
+            background-color: #fafafa;
+            border: 1px solid #ddd;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+        /* Quill 에디터 내용 스타일 */
+        .ql-container.ql-snow {
+            border: 1px solid #ddd;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="editor"></div>
+
+    <script>
+        const quill = new Quill('#editor', {
+            theme: 'snow',
+            placeholder: '여기에 내용을 입력하세요...' // 플레이스홀더 텍스트 설정
+        });
+    </script>
+
+</body>
+</html>
